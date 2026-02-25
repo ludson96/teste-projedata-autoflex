@@ -3,6 +3,7 @@ package com.ludson.inventory_api.controllers;
 import com.ludson.inventory_api.dto.RawMaterialRequest;
 import com.ludson.inventory_api.models.entities.RawMaterial;
 import com.ludson.inventory_api.models.repositories.RawMaterialRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,6 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("Raw Material Controller Tests")
 class RawMaterialControllerTest {
 
     @Mock
@@ -26,6 +28,7 @@ class RawMaterialControllerTest {
     private RawMaterialController controller;
 
     @Test
+    @DisplayName("Should return a list of all raw materials")
     void getAll_ShouldReturnListOfMaterials() {
         when(repository.findAll()).thenReturn(List.of(new RawMaterial()));
 
@@ -36,6 +39,7 @@ class RawMaterialControllerTest {
     }
 
     @Test
+    @DisplayName("Should create and return a new raw material")
     void create_ShouldReturnSavedMaterial() {
         RawMaterialRequest request = new RawMaterialRequest("Steel", 100.0);
         RawMaterial savedMaterial = new RawMaterial();
@@ -53,6 +57,7 @@ class RawMaterialControllerTest {
     }
 
     @Test
+    @DisplayName("Should update and return the existing raw material")
     void update_ShouldReturnUpdatedMaterial() {
         Long id = 1L;
         RawMaterialRequest request = new RawMaterialRequest("Iron", 50.0);
@@ -71,6 +76,7 @@ class RawMaterialControllerTest {
     }
 
     @Test
+    @DisplayName("Should delete the raw material by ID")
     void delete_ShouldCallRepositoryDelete() {
         Long id = 1L;
         controller.delete(id);

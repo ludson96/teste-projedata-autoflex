@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("Product Material Association Controller Tests")
 class ProductMaterialControllerTest {
 
     @Mock
@@ -35,6 +36,7 @@ class ProductMaterialControllerTest {
     private ProductMaterialController controller;
 
     @Test
+    @DisplayName("Should return materials associated with a product")
     void getByProduct_ShouldReturnMaterialsForProduct() {
         Long productId = 1L;
         when(repo.findByProductId(productId)).thenReturn(List.of(new ProductMaterial()));
@@ -46,6 +48,7 @@ class ProductMaterialControllerTest {
     }
 
     @Test
+    @DisplayName("Should create a new association between product and material")
     void addMaterialToProduct_ShouldCreateAssociation() {
         ProductMaterialRequest request = new ProductMaterialRequest(1L, 2L, 5.0);
         Product product = new Product();
@@ -70,6 +73,7 @@ class ProductMaterialControllerTest {
     }
 
     @Test
+    @DisplayName("Should update the quantity required for an association")
     void updateMaterial_ShouldUpdateQuantity() {
         Long id = 1L;
         ProductMaterialRequest request = new ProductMaterialRequest(null, null, 10.0);
@@ -87,6 +91,7 @@ class ProductMaterialControllerTest {
     }
 
     @Test
+    @DisplayName("Should delete the association")
     void removeMaterial_ShouldDeleteAssociation() {
         Long id = 1L;
         controller.removeMaterial(id);

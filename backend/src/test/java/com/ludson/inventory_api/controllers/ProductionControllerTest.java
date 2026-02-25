@@ -1,6 +1,7 @@
 package com.ludson.inventory_api.controllers;
 
 import com.ludson.inventory_api.services.ProductionService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,6 +17,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("Production Plan Controller Tests")
 class ProductionControllerTest {
 
     @Mock
@@ -25,6 +27,7 @@ class ProductionControllerTest {
     private ProductionController controller;
 
     @Test
+    @DisplayName("Should return the production plan from service")
     void plan_ShouldReturnServiceResult() {
         List<Map<String, Object>> expectedResult = List.of(Map.of("key", "value"));
         when(service.calculateProduction()).thenReturn(expectedResult);

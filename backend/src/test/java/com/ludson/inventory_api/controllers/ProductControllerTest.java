@@ -3,6 +3,7 @@ package com.ludson.inventory_api.controllers;
 import com.ludson.inventory_api.dto.ProductRequest;
 import com.ludson.inventory_api.models.entities.Product;
 import com.ludson.inventory_api.models.repositories.ProductRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,6 +19,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("Product Controller Tests")
 class ProductControllerTest {
 
     @Mock
@@ -27,6 +29,7 @@ class ProductControllerTest {
     private ProductController controller;
 
     @Test
+    @DisplayName("Should return a list of all products")
     void getAll_ShouldReturnListOfProducts() {
         when(repository.findAll()).thenReturn(List.of(new Product(), new Product()));
 
@@ -37,6 +40,7 @@ class ProductControllerTest {
     }
 
     @Test
+    @DisplayName("Should create and return a new product")
     void create_ShouldReturnSavedProduct() {
         ProductRequest request = new ProductRequest("Test Product", BigDecimal.TEN);
         Product savedProduct = new Product();
@@ -54,6 +58,7 @@ class ProductControllerTest {
     }
 
     @Test
+    @DisplayName("Should update and return the existing product")
     void update_ShouldReturnUpdatedProduct() {
         Long id = 1L;
         ProductRequest request = new ProductRequest("Updated Name", BigDecimal.ONE);
@@ -73,6 +78,7 @@ class ProductControllerTest {
     }
 
     @Test
+    @DisplayName("Should delete the product by ID")
     void delete_ShouldCallRepositoryDelete() {
         Long id = 1L;
 
