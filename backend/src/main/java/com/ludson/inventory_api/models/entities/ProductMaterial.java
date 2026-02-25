@@ -2,6 +2,12 @@ package com.ludson.inventory_api.models.entities;
 
 import jakarta.persistence.*;
 
+/**
+ * Entity representing the association between a Product and a Raw Material.
+ * This class functions as a join entity with an additional column for quantity,
+ * defining the "recipe" or composition of a product.
+ * Maps to the "product_materials" table.
+ */
 @Entity
 @Table(name = "product_materials")
 public class ProductMaterial {
