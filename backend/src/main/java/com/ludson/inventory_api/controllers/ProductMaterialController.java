@@ -1,5 +1,6 @@
 package com.ludson.inventory_api.controllers;
 
+import com.ludson.inventory_api.dto.ProductMaterialRequest;
 import com.ludson.inventory_api.models.entities.Product;
 import com.ludson.inventory_api.models.entities.ProductMaterial;
 import com.ludson.inventory_api.models.entities.RawMaterial;
