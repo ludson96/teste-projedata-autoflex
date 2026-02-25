@@ -44,6 +44,13 @@ public class ProductMaterialController {
         return repo.save(pm);
     }
 
+    @PutMapping("/{id}")
+    public ProductMaterial updateMaterial(@PathVariable Long id, @RequestBody ProductMaterialRequest req) {
+        ProductMaterial pm = repo.findById(id).orElseThrow();
+        pm.setQuantityRequired(req.quantityRequired());
+        return repo.save(pm);
+    }
+
     @DeleteMapping("/{id}")
     public void removeMaterial(@PathVariable Long id) {
         repo.deleteById(id);

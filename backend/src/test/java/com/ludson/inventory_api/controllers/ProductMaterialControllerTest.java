@@ -7,6 +7,7 @@ import com.ludson.inventory_api.models.entities.RawMaterial;
 import com.ludson.inventory_api.models.repositories.ProductMaterialRepository;
 import com.ludson.inventory_api.models.repositories.ProductRepository;
 import com.ludson.inventory_api.models.repositories.RawMaterialRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -66,6 +67,23 @@ class ProductMaterialControllerTest {
         assertEquals(product, result.getProduct());
         assertEquals(material, result.getMaterial());
         assertEquals(5.0, result.getQuantityRequired());
+    }
+
+    @Test
+    void updateMaterial_ShouldUpdateQuantity() {
+        Long id = 1L;
+        ProductMaterialRequest request = new ProductMaterialRequest(null, null, 10.0);
+        ProductMaterial existingPm = new ProductMaterial();
+        existingPm.setId(id);
+        existingPm.setQuantityRequired(5.0);
+
+        when(repo.findById(id)).thenReturn(Optional.of(existingPm));
+        when(repo.save(any(ProductMaterial.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        ProductMaterial result = controller.updateMaterial(id, request);
+
+        assertEquals(10.0, result.getQuantityRequired());
+        verify(repo, times(1)).findById(id);
     }
 
     @Test
