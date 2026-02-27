@@ -15,6 +15,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/materials")
+@CrossOrigin(origins = "*")
 public class RawMaterialController {
 
     private final RawMaterialRepository repo;

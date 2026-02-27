@@ -14,6 +14,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/production-plan")
+@CrossOrigin(origins = "*")
 public class ProductionController {
 
     private final ProductionService service;
