@@ -31,13 +31,11 @@ export const ProductManager: React.FC = () => {
     const [editingId, setEditingId] = useState<number | null>(null);
 
     useEffect(() => {
-        if (status === 'idle') {
-            dispatch(getProducts());
-        }
+        dispatch(getProducts());
         if (rawMaterialsStatus === 'idle') {
             dispatch(getRawMaterials());
         }
-    }, [status, rawMaterialsStatus, dispatch]);
+    }, [rawMaterialsStatus, dispatch]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -67,6 +65,7 @@ export const ProductManager: React.FC = () => {
             } else {
                 await dispatch(createProduct({ name: formData.name, price: formData.price, materials: materialsToSend as any })).unwrap();
             }
+            dispatch(getRawMaterials());
             setFormData(initialFormState);
             setEditingId(null);
         } catch (err: any) {
@@ -82,7 +81,7 @@ export const ProductManager: React.FC = () => {
         setFormData({
             name: product.name,
             price: product.price,
-            materials: product.materials.map(pm => ({
+            materials: (product.materials || []).map(pm => ({
                 rawMaterialId: pm.material.id,
                 quantity: pm.quantityRequired,
             }))
@@ -114,6 +113,7 @@ export const ProductManager: React.FC = () => {
         const newMaterials = formData.materials.filter((_, i) => i !== index);
         setFormData({ ...formData, materials: newMaterials });
     };
+
 
     // Ordena os produtos do mais caro para o mais barato
     const sortedProducts = [...(products || [])]

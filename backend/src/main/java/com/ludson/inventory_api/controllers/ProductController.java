@@ -1,20 +1,19 @@
 package com.ludson.inventory_api.controllers;
 
-import com.ludson.inventory_api.dto.MaterialComponentRequest;
-import com.ludson.inventory_api.models.entities.ProductMaterial;
-import com.ludson.inventory_api.models.entities.RawMaterial;
-import com.ludson.inventory_api.models.repositories.RawMaterialRepository;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import com.ludson.inventory_api.dto.ProductRequest;
 import com.ludson.inventory_api.models.entities.Product;
+import com.ludson.inventory_api.models.entities.RawMaterial;
 import com.ludson.inventory_api.models.repositories.ProductRepository;
+import com.ludson.inventory_api.models.repositories.RawMaterialRepository;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * REST controller responsible for managing Final Products.
@@ -27,11 +26,11 @@ import java.util.NoSuchElementException;
 public class ProductController {
 
     private final ProductRepository repo;
-    private final RawMaterialRepository materialRepo;
+    private final RawMaterialRepository rawMaterialRepo;
 
-    public ProductController(ProductRepository repo, RawMaterialRepository materialRepo) {
+    public ProductController(ProductRepository repo, RawMaterialRepository rawMaterialRepo) {
         this.repo = repo;
-        this.materialRepo = materialRepo;
+        this.rawMaterialRepo = rawMaterialRepo;
     }
 
     /**
@@ -40,8 +39,10 @@ public class ProductController {
      * @return A list containing all products.
      */
     @GetMapping
-    public List<Product> getAll() {
-        return repo.findAll();
+    public List<Map<String, Object>> getAll() {
+        return repo.findAll().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -53,34 +54,25 @@ public class ProductController {
      */
     @PostMapping
     @Transactional
-    public Product create(@RequestBody @Valid ProductRequest req) {
+    public Map<String, Object> create(@RequestBody @Valid ProductRequest req) {
         Product p = new Product();
         p.setName(req.name());
         p.setPrice(req.price());
 
-        List<ProductMaterial> productMaterials = new ArrayList<>();
-        for (MaterialComponentRequest comp : req.materials()) {
-            RawMaterial rm = materialRepo.findById(comp.rawMaterialId())
-                    .orElseThrow(
-                            () -> new NoSuchElementException("RawMaterial not found with id: " + comp.rawMaterialId()));
+        if (req.materials() != null) {
+            for (var mat : req.materials()) {
+                RawMaterial rm = rawMaterialRepo.findById(mat.rawMaterialId()).orElseThrow();
 
-            double newStock = rm.getStockQuantity() - comp.quantity();
-            if (newStock < 0) {
-                throw new IllegalStateException(
-                        "Not enough stock for raw material: " + rm.getName() + ". Required: " + comp.quantity()
-                                + ", Available: " + rm.getStockQuantity());
+                if (rm.getStockQuantity() < mat.quantity()) {
+                    throw new RuntimeException("Estoque insuficiente para a matéria-prima: " + rm.getName());
+                }
+
+                rm.setStockQuantity(rm.getStockQuantity() - mat.quantity());
+                rawMaterialRepo.save(rm);
             }
-            rm.setStockQuantity(newStock);
-
-            ProductMaterial pm = new ProductMaterial();
-            pm.setProduct(p);
-            pm.setMaterial(rm);
-            pm.setQuantityRequired(comp.quantity());
-            productMaterials.add(pm);
         }
-        p.setMaterials(productMaterials);
 
-        return repo.save(p);
+        return convertToDto(repo.save(p));
     }
 
     /**
@@ -93,30 +85,15 @@ public class ProductController {
      *                                          not found.
      */
     @PutMapping("/{id}")
-    public Product update(@PathVariable Long id, @RequestBody @Valid ProductRequest req) {
+    public Map<String, Object> update(@PathVariable Long id, @RequestBody @Valid ProductRequest req) {
         Product p = repo.findById(id).orElseThrow();
         p.setName(req.name());
         p.setPrice(req.price());
 
         // Limpa os materiais existentes e adiciona a nova lista.
         // A anotação orphanRemoval=true na entidade Product cuidará da exclusão.
-        p.getMaterials().clear();
 
-        List<ProductMaterial> productMaterials = new ArrayList<>();
-        for (MaterialComponentRequest comp : req.materials()) {
-            RawMaterial rm = materialRepo.findById(comp.rawMaterialId())
-                    .orElseThrow(
-                            () -> new NoSuchElementException("RawMaterial not found with id: " + comp.rawMaterialId()));
-
-            ProductMaterial pm = new ProductMaterial();
-            pm.setProduct(p);
-            pm.setMaterial(rm);
-            pm.setQuantityRequired(comp.quantity());
-            productMaterials.add(pm);
-        }
-        p.setMaterials(productMaterials);
-
-        return repo.save(p);
+        return convertToDto(repo.save(p));
     }
 
     /**
@@ -127,5 +104,14 @@ public class ProductController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         repo.deleteById(id);
+    }
+
+    private Map<String, Object> convertToDto(Product product) {
+        Map<String, Object> dto = new HashMap<>();
+        dto.put("id", product.getId());
+        dto.put("name", product.getName());
+        dto.put("price", product.getPrice());
+
+        return dto;
     }
 }

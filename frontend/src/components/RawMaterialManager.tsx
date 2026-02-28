@@ -43,7 +43,6 @@ export const RawMaterialManager: React.FC = () => {
         .filter(material => material && material.id != null && material.name)
         .sort((a, b) => a.name.localeCompare(b.name));
 
-    console.log('Lista de matérias-primas:', sortedRawMaterials);
 
     let content;
 

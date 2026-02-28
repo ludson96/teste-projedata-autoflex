@@ -31,6 +31,22 @@ export const deleteProduct = createAsyncThunk('products/deleteProduct', async (i
     return id;
 });
 
+// Helper para tratar respostas da API que vêm como string JSON malformada
+const parseResponse = (payload: any) => {
+    if (typeof payload === 'string') {
+        try {
+            // Workaround: Corrige JSON malformado vindo do backend (provável referência circular cortada)
+            // Substitui "materials":] (inválido) por "materials":[] (array vazio válido)
+            const fixedPayload = payload.replace(/"materials":\s*]/g, '"materials":[]');
+            return JSON.parse(fixedPayload);
+        } catch (e) {
+            console.error('Erro ao fazer parse do JSON:', e);
+            return null;
+        }
+    }
+    return payload;
+};
+
 const productsSlice = createSlice({
     name: 'products',
     initialState,
@@ -42,25 +58,24 @@ const productsSlice = createSlice({
             })
             .addCase(getProducts.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                let payload = action.payload;
+                let payload = parseResponse(action.payload);
 
-                // Se a resposta vier como string (JSON), tenta fazer o parse para objeto/array
-                if (typeof payload === 'string') {
-                    try {
-                        // Workaround: Corrige JSON malformado vindo do backend (provável referência circular cortada)
-                        // Substitui "materials":] (inválido) por "materials":[] (array vazio válido)
-                        const fixedPayload = (payload as string).replace(/"materials":]/g, '"materials":[]');
-                        payload = JSON.parse(fixedPayload);
-                    } catch (e) {
-                        console.error('Erro ao fazer parse do JSON de produtos:', e);
-                    }
-                }
-
-                // Garante que o payload seja um array. Se a API retornar um objeto, define como array vazio para evitar quebras.
+                // Normaliza a resposta para garantir que seja um array
                 if (Array.isArray(payload)) {
                     state.items = payload;
+                } else if (payload && typeof payload === 'object') {
+                    // Verifica se é uma resposta paginada ou envelopada (comum em APIs Java/Spring)
+                    if (Array.isArray(payload.content)) {
+                        state.items = payload.content;
+                    } else if (Array.isArray(payload.items)) {
+                        state.items = payload.items;
+                    } else if (Array.isArray(payload.data)) {
+                        state.items = payload.data;
+                    } else {
+                        // Se a API retornar um objeto único (não array), envolvemos em um array
+                        state.items = [payload];
+                    }
                 } else {
-                    console.error('A resposta da API getProducts não é um array:', payload);
                     state.items = [];
                 }
             })
@@ -71,12 +86,16 @@ const productsSlice = createSlice({
             .addCase(createProduct.fulfilled, (state, action) => {
                 // Proteção extra: se state.items foi corrompido, reinicia como array antes do push
                 if (!Array.isArray(state.items)) state.items = [];
-                state.items.push(action.payload);
+                const payload = parseResponse(action.payload);
+                if (payload) {
+                    state.items.push(payload);
+                }
             })
             .addCase(updateProduct.fulfilled, (state, action) => {
-                const index = state.items.findIndex((item) => item.id === action.payload.id);
+                const payload = parseResponse(action.payload);
+                const index = state.items.findIndex((item) => item.id === payload?.id);
                 if (index !== -1) {
-                    state.items[index] = action.payload;
+                    state.items[index] = payload;
                 }
             })
             .addCase(deleteProduct.fulfilled, (state, action) => {

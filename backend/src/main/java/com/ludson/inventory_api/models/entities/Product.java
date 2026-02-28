@@ -2,7 +2,6 @@ package com.ludson.inventory_api.models.entities;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * Entity representing a final product that can be manufactured.
@@ -27,8 +26,6 @@ public class Product {
      * product.
      * This defines the product's "recipe".
      */
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductMaterial> materials;
 
     public Product() {
     }
@@ -51,10 +48,6 @@ public class Product {
         return price;
     }
 
-    public List<ProductMaterial> getMaterials() {
-        return materials;
-    }
-
     public void setId(Long id) {
         this.id = id;
     }
@@ -67,7 +60,4 @@ public class Product {
         this.price = price;
     }
 
-    public void setMaterials(List<ProductMaterial> materials) {
-        this.materials = materials;
-    }
 }
