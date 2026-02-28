@@ -42,13 +42,35 @@ const productsSlice = createSlice({
             })
             .addCase(getProducts.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.items = action.payload;
+                let payload = action.payload;
+
+                // Se a resposta vier como string (JSON), tenta fazer o parse para objeto/array
+                if (typeof payload === 'string') {
+                    try {
+                        // Workaround: Corrige JSON malformado vindo do backend (provável referência circular cortada)
+                        // Substitui "materials":] (inválido) por "materials":[] (array vazio válido)
+                        const fixedPayload = (payload as string).replace(/"materials":]/g, '"materials":[]');
+                        payload = JSON.parse(fixedPayload);
+                    } catch (e) {
+                        console.error('Erro ao fazer parse do JSON de produtos:', e);
+                    }
+                }
+
+                // Garante que o payload seja um array. Se a API retornar um objeto, define como array vazio para evitar quebras.
+                if (Array.isArray(payload)) {
+                    state.items = payload;
+                } else {
+                    console.error('A resposta da API getProducts não é um array:', payload);
+                    state.items = [];
+                }
             })
             .addCase(getProducts.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.error.message ?? 'Failed to fetch products';
             })
             .addCase(createProduct.fulfilled, (state, action) => {
+                // Proteção extra: se state.items foi corrompido, reinicia como array antes do push
+                if (!Array.isArray(state.items)) state.items = [];
                 state.items.push(action.payload);
             })
             .addCase(updateProduct.fulfilled, (state, action) => {

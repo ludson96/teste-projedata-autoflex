@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { RawMaterialManager } from './components/RawMaterialManager';
 import { ProductManager } from './components/ProductManager';
-import { ProductionReport } from './components/ProductionReport';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'materials' | 'products' | 'production'>('materials');
+  const [activeTab, setActiveTab] = useState<'materials' | 'products'>('materials');
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -24,10 +23,6 @@ function App() {
                   className={`${activeTab === 'products' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
                   Products
                 </button>
-                <button onClick={() => setActiveTab('production')}
-                  className={`${activeTab === 'production' ? 'border-blue-500 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}>
-                  Production Plan
-                </button>
               </div>
             </div>
           </div>
@@ -37,7 +32,6 @@ function App() {
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         {activeTab === 'materials' && <RawMaterialManager />}
         {activeTab === 'products' && <ProductManager />}
-        {activeTab === 'production' && <ProductionReport />}
       </main>
     </div>
   );

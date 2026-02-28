@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { createRawMaterial, deleteRawMaterial, getRawMaterials, updateRawMaterial } from '../data/rawMaterialsSlice';
-import type { RawMaterial } from '../types';
+import type { RawMaterial } from '../types'; // Importa o tipo RawMaterial
 import type { AppDispatch, RootState } from '../store/store';
 
 export const RawMaterialManager: React.FC = () => {
@@ -39,6 +39,12 @@ export const RawMaterialManager: React.FC = () => {
         setEditingId(material.id);
     };
 
+    const sortedRawMaterials = [...(rawMaterials || [])]
+        .filter(material => material && material.id != null && material.name)
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+    console.log('Lista de matérias-primas:', sortedRawMaterials);
+
     let content;
 
     if (status === 'loading') {
@@ -55,7 +61,7 @@ export const RawMaterialManager: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {rawMaterials.map((material) => (
+                        {sortedRawMaterials.map((material) => (
                             <tr key={material.id}>
                                 <td className="px-6 py-4 whitespace-nowrap">{material.name}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">{material.stockQuantity}</td>
@@ -75,7 +81,7 @@ export const RawMaterialManager: React.FC = () => {
                                 </td>
                             </tr>
                         ))}
-                        {rawMaterials.length === 0 && (
+                        {sortedRawMaterials.length === 0 && (
                             <tr>
                                 <td colSpan={3} className="px-6 py-4 text-center text-gray-500">No raw materials found.</td>
                             </tr>
