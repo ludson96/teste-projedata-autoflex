@@ -36,8 +36,8 @@ const parseResponse = (payload: any) => {
     if (typeof payload === 'string') {
         try {
             // Workaround: Fixes malformed JSON coming from the backend (likely cut circular reference)
-            // Replaces "materials":] (invalid) with "materials":[] (valid empty array)
-            const fixedPayload = payload.replace(/"materials":\s*]/g, '"materials":[]');
+            // Replaces "materials":} (invalid) with "materials":[]} (valid empty object)
+            const fixedPayload = payload.replace(/"materials":}/g, '"materials":[]}');
             return JSON.parse(fixedPayload);
         } catch (e) {
             console.error('Error parsing JSON:', e);

@@ -100,9 +100,10 @@ export const RawMaterialManager: React.FC = () => {
 
             <form onSubmit={handleSubmit} className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700">Name</label>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
                     <input
                         type="text"
+                        id="name"
                         required
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2"
                         value={formData.name}
@@ -110,9 +111,10 @@ export const RawMaterialManager: React.FC = () => {
                     />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700">Stock Quantity</label>
+                    <label htmlFor="stockQuantity" className="block text-sm font-medium text-gray-700">Stock Quantity</label>
                     <input
                         type="number"
+                        id="stockQuantity"
                         required
                         min="0"
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm border p-2"

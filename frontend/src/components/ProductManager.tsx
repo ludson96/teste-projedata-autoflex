@@ -31,11 +31,13 @@ export const ProductManager: React.FC = () => {
     const [editingId, setEditingId] = useState<number | null>(null);
 
     useEffect(() => {
-        dispatch(getProducts());
+        if (status === 'idle') {
+            dispatch(getProducts());
+        }
         if (rawMaterialsStatus === 'idle') {
             dispatch(getRawMaterials());
         }
-    }, [rawMaterialsStatus, dispatch]);
+    }, [status, rawMaterialsStatus, dispatch]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
