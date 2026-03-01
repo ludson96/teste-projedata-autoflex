@@ -41,17 +41,17 @@ export const ProductManager: React.FC = () => {
         e.preventDefault();
 
         if (formData.materials.length === 0) {
-            alert('O produto precisa de ao menos uma matéria-prima.');
+            alert('The product needs at least one raw material.');
             return;
         }
 
-        // Mapeia os materiais do formulário para o formato esperado pelo backend
+        // Maps form materials to the format expected by the backend
         const materialsToSend = formData.materials.map(material => {
             if (material.rawMaterialId === '') {
-                throw new Error('Por favor, selecione uma matéria-prima para todas as entradas.');
+                throw new Error('Please select a raw material for all entries.');
             }
             if (material.quantity <= 0) {
-                throw new Error('A quantidade da matéria-prima deve ser positiva.');
+                throw new Error('The raw material quantity must be positive.');
             }
             return {
                 rawMaterialId: Number(material.rawMaterialId),
@@ -69,10 +69,10 @@ export const ProductManager: React.FC = () => {
             setFormData(initialFormState);
             setEditingId(null);
         } catch (err: any) {
-            // Extrai a mensagem de erro da resposta da API (ajuste se o formato for diferente)
-            const errorMessage = err?.message || 'Falha ao salvar o produto. Verifique os dados e tente novamente.';
-            alert(`Erro: ${errorMessage}`);
-            console.error("Falha ao salvar produto:", err);
+            // Extracts the error message from the API response (adjust if the format is different)
+            const errorMessage = err?.message || 'Failed to save product. Check data and try again.';
+            alert(`Error: ${errorMessage}`);
+            console.error("Failed to save product:", err);
         }
     };
 
@@ -115,7 +115,7 @@ export const ProductManager: React.FC = () => {
     };
 
 
-    // Ordena os produtos do mais caro para o mais barato
+    // Sorts products from most expensive to cheapest
     const sortedProducts = [...(products || [])]
         .filter(product => product && product.id != null && product.name)
         .sort((a, b) => (b.price ?? 0) - (a.price ?? 0));

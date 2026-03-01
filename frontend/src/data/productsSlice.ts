@@ -31,16 +31,16 @@ export const deleteProduct = createAsyncThunk('products/deleteProduct', async (i
     return id;
 });
 
-// Helper para tratar respostas da API que vêm como string JSON malformada
+// Helper to handle API responses that come as malformed JSON strings
 const parseResponse = (payload: any) => {
     if (typeof payload === 'string') {
         try {
-            // Workaround: Corrige JSON malformado vindo do backend (provável referência circular cortada)
-            // Substitui "materials":] (inválido) por "materials":[] (array vazio válido)
+            // Workaround: Fixes malformed JSON coming from the backend (likely cut circular reference)
+            // Replaces "materials":] (invalid) with "materials":[] (valid empty array)
             const fixedPayload = payload.replace(/"materials":\s*]/g, '"materials":[]');
             return JSON.parse(fixedPayload);
         } catch (e) {
-            console.error('Erro ao fazer parse do JSON:', e);
+            console.error('Error parsing JSON:', e);
             return null;
         }
     }
@@ -60,11 +60,11 @@ const productsSlice = createSlice({
                 state.status = 'succeeded';
                 let payload = parseResponse(action.payload);
 
-                // Normaliza a resposta para garantir que seja um array
+                // Normalizes the response to ensure it is an array
                 if (Array.isArray(payload)) {
                     state.items = payload;
                 } else if (payload && typeof payload === 'object') {
-                    // Verifica se é uma resposta paginada ou envelopada (comum em APIs Java/Spring)
+                    // Checks if it is a paginated or enveloped response (common in Java/Spring APIs)
                     if (Array.isArray(payload.content)) {
                         state.items = payload.content;
                     } else if (Array.isArray(payload.items)) {
@@ -72,7 +72,7 @@ const productsSlice = createSlice({
                     } else if (Array.isArray(payload.data)) {
                         state.items = payload.data;
                     } else {
-                        // Se a API retornar um objeto único (não array), envolvemos em um array
+                        // If the API returns a single object (not array), wrap it in an array
                         state.items = [payload];
                     }
                 } else {
@@ -84,7 +84,7 @@ const productsSlice = createSlice({
                 state.error = action.error.message ?? 'Failed to fetch products';
             })
             .addCase(createProduct.fulfilled, (state, action) => {
-                // Proteção extra: se state.items foi corrompido, reinicia como array antes do push
+                // Extra protection: if state.items was corrupted, reset as array before push
                 if (!Array.isArray(state.items)) state.items = [];
                 const payload = parseResponse(action.payload);
                 if (payload) {

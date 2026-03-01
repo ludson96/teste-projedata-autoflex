@@ -1,146 +1,156 @@
-// package com.ludson.inventory_api.controllers;
+package com.ludson.inventory_api.controllers;
 
-// import com.ludson.inventory_api.dto.MaterialComponentRequest;
-// import com.ludson.inventory_api.dto.ProductRequest;
-// import com.ludson.inventory_api.models.entities.Product;
-// import com.ludson.inventory_api.models.entities.RawMaterial;
-// import com.ludson.inventory_api.models.repositories.ProductRepository;
-// import com.ludson.inventory_api.models.repositories.RawMaterialRepository;
-// import org.junit.jupiter.api.DisplayName;
-// import org.junit.jupiter.api.Test;
-// import org.junit.jupiter.api.extension.ExtendWith;
-// import org.mockito.InjectMocks;
-// import org.mockito.Mock;
-// import org.mockito.junit.jupiter.MockitoExtension;
+import com.ludson.inventory_api.dto.ProductMaterialRequest;
+import com.ludson.inventory_api.dto.ProductRequest;
+import com.ludson.inventory_api.models.entities.Product;
+import com.ludson.inventory_api.models.entities.RawMaterial;
+import com.ludson.inventory_api.models.repositories.ProductRepository;
+import com.ludson.inventory_api.models.repositories.RawMaterialRepository;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-// import java.math.BigDecimal;
-// import java.util.Collections;
-// import java.util.List;
-// import java.util.Optional;
+import java.math.BigDecimal;
+import java.util.*;
 
-// import static org.junit.jupiter.api.Assertions.*;
-// import static org.mockito.ArgumentMatchers.any;
-// import static org.mockito.Mockito.*;
-// import org.mockito.ArgumentCaptor;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-// @ExtendWith(MockitoExtension.class)
-// @DisplayName("Product Controller Tests")
-// class ProductControllerTest {
+@ExtendWith(MockitoExtension.class)
+@DisplayName("Product Controller Tests")
+class ProductControllerTest {
 
-//     @Mock
-//     private ProductRepository repository;
+    @Mock
+    private ProductRepository repository;
 
-//     @Mock
-//     private RawMaterialRepository materialRepo;
+    @Mock
+    private RawMaterialRepository materialRepo;
 
-//     @InjectMocks
-//     private ProductController controller;
+    @InjectMocks
+    private ProductController controller;
 
-//     @Test
-//     @DisplayName("Should return a list of all products")
-//     void getAll_ShouldReturnListOfProducts() {
-//         when(repository.findAll()).thenReturn(List.of(new Product(), new Product()));
+    @Test
+    @DisplayName("Should return a list of all products")
+    void getAll_ShouldReturnListOfProducts() {
+        // Arrange
+        Product product = new Product();
+        product.setId(1L);
+        product.setName("Test Product");
+        product.setPrice(BigDecimal.TEN);
 
-//         List<Product> result = controller.getAll();
+        when(repository.findAll()).thenReturn(List.of(product));
 
-//         assertEquals(2, result.size());
-//         verify(repository, times(1)).findAll();
-//     }
+        // Act
+        List<Map<String, Object>> result = controller.getAll();
 
-//     @Test
-//     @DisplayName("Should create product, update stock, and return the new product")
-//     void create_ShouldReturnSavedProduct() {
-//         // Arrange
-//         MaterialComponentRequest materialRequest = new MaterialComponentRequest(1L, 10.0);
-//         ProductRequest request = new ProductRequest("Test Product", BigDecimal.TEN, List.of(materialRequest));
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("Test Product", result.get(0).get("name"));
+        verify(repository, times(1)).findAll();
+    }
 
-//         RawMaterial rawMaterial = new RawMaterial();
-//         rawMaterial.setId(1L);
-//         rawMaterial.setName("Steel");
-//         rawMaterial.setStockQuantity(100.0);
+    @Test
+    @DisplayName("Should create and return a new product")
+    void create_ShouldReturnSavedProduct() {
+        // Arrange
+        ProductMaterialRequest materialReq = new ProductMaterialRequest(1L, 10.0);
+        ProductRequest request = new ProductRequest("Test Product", BigDecimal.TEN, List.of(materialReq));
+        
+        RawMaterial rawMaterial = new RawMaterial();
+        rawMaterial.setId(1L);
+        rawMaterial.setName("Iron");
+        rawMaterial.setStockQuantity(100.0);
 
-//         Product savedProduct = new Product();
-//         savedProduct.setId(1L);
-//         savedProduct.setName("Test Product");
-//         savedProduct.setPrice(BigDecimal.TEN);
+        Product savedProduct = new Product();
+        savedProduct.setId(1L);
+        savedProduct.setName("Test Product");
+        savedProduct.setPrice(BigDecimal.TEN);
 
-//         when(materialRepo.findById(1L)).thenReturn(Optional.of(rawMaterial));
-//         when(repository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(materialRepo.findById(1L)).thenReturn(Optional.of(rawMaterial));
+        // Mock saving the raw material to return itself (simulating DB update)
+        when(materialRepo.save(any(RawMaterial.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(repository.save(any(Product.class))).thenReturn(savedProduct);
 
-//         // Act
-//         Product result = controller.create(request);
+        // Act
+        Map<String, Object> result = controller.create(request);
 
-//         // Assert
-//         assertEquals("Test Product", result.getName());
-//         assertEquals(90.0, rawMaterial.getStockQuantity());
+        // Assert
+        assertNotNull(result);
+        assertEquals("Test Product", result.get("name"));
+        assertEquals(BigDecimal.TEN, result.get("price"));
+        
+        // Verify stock update: 100 - 10 = 90
+        assertEquals(90.0, rawMaterial.getStockQuantity());
+        verify(materialRepo, times(1)).save(rawMaterial);
+        verify(repository, times(1)).save(any(Product.class));
+    }
 
-//         ArgumentCaptor<Product> productCaptor = ArgumentCaptor.forClass(Product.class);
-//         verify(repository, times(1)).save(productCaptor.capture());
-//         Product capturedProduct = productCaptor.getValue();
+    @Test
+    @DisplayName("Should throw exception when creating product with insufficient stock")
+    void create_ShouldThrowException_WhenStockIsInsufficient() {
+        // Arrange
+        // Requesting 150, but stock is only 100
+        ProductMaterialRequest materialReq = new ProductMaterialRequest(1L, 150.0);
+        ProductRequest request = new ProductRequest("Test Product", BigDecimal.TEN, List.of(materialReq));
+        
+        RawMaterial rawMaterial = new RawMaterial();
+        rawMaterial.setId(1L);
+        rawMaterial.setName("Iron");
+        rawMaterial.setStockQuantity(100.0);
 
-//         assertEquals(1, capturedProduct.getMaterials().size());
-//         assertEquals(90.0, capturedProduct.getMaterials().get(0).getMaterial().getStockQuantity());
-//         verify(materialRepo, times(1)).findById(1L);
-//     }
+        when(materialRepo.findById(1L)).thenReturn(Optional.of(rawMaterial));
 
-//     @Test
-//     @DisplayName("Should throw exception when creating a product with insufficient raw material stock")
-//     void create_WhenInsufficientStock_ShouldThrowException() {
-//         // Arrange
-//         MaterialComponentRequest materialRequest = new MaterialComponentRequest(1L, 10.0);
-//         ProductRequest request = new ProductRequest("Test Product", BigDecimal.TEN, List.of(materialRequest));
+        // Act & Assert
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            controller.create(request);
+        });
 
-//         RawMaterial rawMaterial = new RawMaterial();
-//         rawMaterial.setId(1L);
-//         rawMaterial.setName("Steel");
-//         rawMaterial.setStockQuantity(5.0); // Insufficient stock
+        // The message is hardcoded in Portuguese in the controller, so we assert it as is
+        assertEquals("Estoque insuficiente para a matéria-prima: Iron", exception.getMessage());
+        verify(repository, never()).save(any(Product.class));
+    }
 
-//         when(materialRepo.findById(1L)).thenReturn(Optional.of(rawMaterial));
+    @Test
+    @DisplayName("Should update and return the existing product")
+    void update_ShouldReturnUpdatedProduct() {
+        // Arrange
+        Long id = 1L;
+        ProductRequest request = new ProductRequest("Updated Product", BigDecimal.ONE, Collections.emptyList());
+        
+        Product existingProduct = new Product();
+        existingProduct.setId(id);
+        existingProduct.setName("Old Product");
+        existingProduct.setPrice(BigDecimal.TEN);
 
-//         // Act & Assert
-//         IllegalStateException exception = assertThrows(IllegalStateException.class, () -> controller.create(request));
+        when(repository.findById(id)).thenReturn(Optional.of(existingProduct));
+        when(repository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-//         assertTrue(exception.getMessage().contains("Not enough stock for raw material: Steel"));
-//         verify(repository, never()).save(any(Product.class));
-//     }
+        // Act
+        Map<String, Object> result = controller.update(id, request);
 
-//     @Test
-//     @DisplayName("Should update and return the existing product with new materials")
-//     void update_ShouldReturnUpdatedProduct() {
-//         Long id = 1L;
-//         MaterialComponentRequest materialRequest = new MaterialComponentRequest(2L, 5.0);
-//         ProductRequest request = new ProductRequest("Updated Name", BigDecimal.ONE, List.of(materialRequest));
+        // Assert
+        assertNotNull(result);
+        assertEquals("Updated Product", result.get("name"));
+        assertEquals(BigDecimal.ONE, result.get("price"));
+        verify(repository, times(1)).findById(id);
+        verify(repository, times(1)).save(existingProduct);
+    }
 
-//         Product existingProduct = new Product();
-//         existingProduct.setId(id);
-//         existingProduct.setName("Old Name");
-//         existingProduct.setMaterials(Collections.emptyList()); // Start with no materials
+    @Test
+    @DisplayName("Should delete the product by ID")
+    void delete_ShouldCallRepositoryDelete() {
+        // Arrange
+        Long id = 1L;
 
-//         RawMaterial newRawMaterial = new RawMaterial();
-//         newRawMaterial.setId(2L);
-//         newRawMaterial.setName("Iron");
+        // Act
+        controller.delete(id);
 
-//         when(repository.findById(id)).thenReturn(Optional.of(existingProduct));
-//         when(materialRepo.findById(2L)).thenReturn(Optional.of(newRawMaterial));
-//         when(repository.save(any(Product.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-//         Product result = controller.update(id, request);
-
-//         assertEquals("Updated Name", result.getName());
-//         assertEquals(BigDecimal.ONE, result.getPrice());
-//         assertEquals(1, result.getMaterials().size());
-//         assertEquals("Iron", result.getMaterials().get(0).getMaterial().getName());
-//         verify(repository, times(1)).findById(id);
-//         verify(repository, times(1)).save(existingProduct);
-//     }
-
-//     @Test
-//     @DisplayName("Should delete the product by ID")
-//     void delete_ShouldCallRepositoryDelete() {
-//         Long id = 1L;
-
-//         controller.delete(id);
-
-//         verify(repository, times(1)).deleteById(id);
-//     }
-// }
+        // Assert
+        verify(repository, times(1)).deleteById(id);
+    }
+}

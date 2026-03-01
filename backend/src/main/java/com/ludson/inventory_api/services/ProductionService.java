@@ -59,6 +59,13 @@ public class ProductionService {
 
         List<Map<String, Object>> result = new ArrayList<>();
 
+        for (Product product : products) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("id", product.getId());
+            item.put("name", product.getName());
+            item.put("price", product.getPrice());
+            result.add(item);
+        }
 
         return result;
     }

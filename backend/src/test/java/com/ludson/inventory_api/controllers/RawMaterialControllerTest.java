@@ -73,6 +73,7 @@ class RawMaterialControllerTest {
         assertEquals("Iron", result.getName());
         assertEquals(50.0, result.getStockQuantity());
         verify(repository, times(1)).findById(id);
+        verify(repository, times(1)).save(any(RawMaterial.class));
     }
 
     @Test
