@@ -3,10 +3,15 @@ import { render, screen } from '@testing-library/react';
 import { ProductManager } from './ProductManager';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import productsReducer from '../data/productsSlice';
-import rawMaterialsReducer from '../data/rawMaterialsSlice';
+import productsReducer, { type ProductsState } from '../data/productsSlice';
+import rawMaterialsReducer, { type RawMaterialsState } from '../data/rawMaterialsSlice';
 
-const createMockStore = (initialState: any) => {
+interface RootState {
+    products: ProductsState;
+    rawMaterials: RawMaterialsState;
+}
+
+const createMockStore = (initialState: RootState) => {
     return configureStore({
         reducer: {
             products: productsReducer,
@@ -17,7 +22,7 @@ const createMockStore = (initialState: any) => {
 };
 
 describe('ProductManager', () => {
-    const initialRawMaterialsState = {
+    const initialRawMaterialsState: RawMaterialsState = {
         items: [{ id: 1, name: 'Wood', stockQuantity: 100 }],
         status: 'succeeded',
         error: null,

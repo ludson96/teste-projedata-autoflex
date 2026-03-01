@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import rawMaterialsReducer, { getRawMaterials, createRawMaterial, updateRawMaterial, deleteRawMaterial } from './rawMaterialsSlice';
+import rawMaterialsReducer, { getRawMaterials, createRawMaterial, updateRawMaterial, deleteRawMaterial, type RawMaterialsState } from './rawMaterialsSlice';
 
-const initialState = {
+const initialState: RawMaterialsState = {
     items: [],
     status: 'idle',
     error: null,
@@ -46,7 +46,7 @@ describe('rawMaterialsSlice', () => {
 
     describe('updateRawMaterial extra reducers', () => {
         it('should handle fulfilled state', () => {
-            const existingState = {
+            const existingState: RawMaterialsState = {
                 ...initialState,
                 items: [{ id: 1, name: 'Wood', stockQuantity: 100 }],
             };
@@ -59,7 +59,7 @@ describe('rawMaterialsSlice', () => {
 
     describe('deleteRawMaterial extra reducers', () => {
         it('should handle fulfilled state', () => {
-            const existingState = {
+            const existingState: RawMaterialsState = {
                 ...initialState,
                 items: [{ id: 1, name: 'Wood', stockQuantity: 100 }],
             };

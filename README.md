@@ -46,9 +46,23 @@ O sistema permite o controle completo do inventário de produtos, com as seguint
 
 ### Pré-requisitos
 
-* **Java JDK** (versão 17 ou superior)
-* **Git**
-* **Node.js** e **npm** (para o frontend)
+*   **Java JDK** (versão 17 ou superior)
+*   **Git**
+*   **Node.js** e **npm** (para o frontend)
+*   **Docker** e **Docker Compose** (para o banco de dados)
+
+### Banco de Dados com Docker
+
+O projeto utiliza um banco de dados PostgreSQL. A maneira mais fácil de iniciar o banco de dados é usando Docker Compose.
+
+1.  Certifique-se de que o Docker está em execução em sua máquina.
+2.  Na raiz do projeto, execute o seguinte comando para iniciar o contêiner do PostgreSQL em segundo plano:
+
+    ```bash
+    docker-compose up -d
+    ```
+
+    Isso iniciará um banco de dados PostgreSQL na porta `5432`, que o backend usará para se conectar.
 
 ### Passo a passo
 

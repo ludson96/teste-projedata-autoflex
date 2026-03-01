@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import productsReducer, { getProducts, createProduct, updateProduct, deleteProduct } from './productsSlice';
+import productsReducer, { getProducts, createProduct, updateProduct, deleteProduct, type ProductsState } from './productsSlice';
 
-const initialState = {
+const initialState: ProductsState = {
     items: [],
     status: 'idle',
     error: null,
@@ -20,7 +20,7 @@ describe('productsSlice', () => {
         });
 
         it('should handle fulfilled state with a simple array payload', () => {
-            const mockProducts = [{ id: 1, name: 'Chair', price: 100 }];
+            const mockProducts = [{ id: 1, name: 'Chair', price: 100, materials: [] }];
             const action = { type: getProducts.fulfilled.type, payload: mockProducts };
             const state = productsReducer(initialState, action);
             expect(state.status).toBe('succeeded');
@@ -28,7 +28,7 @@ describe('productsSlice', () => {
         });
 
         it('should handle fulfilled state with a stringified JSON payload', () => {
-            const mockProducts = [{ id: 1, name: 'Chair', price: 100 }];
+            const mockProducts = [{ id: 1, name: 'Chair', price: 100, materials: [] }];
             const stringPayload = JSON.stringify(mockProducts);
             const action = { type: getProducts.fulfilled.type, payload: stringPayload };
             const state = productsReducer(initialState, action);
@@ -37,7 +37,7 @@ describe('productsSlice', () => {
         });
 
         it('should handle fulfilled state with a paginated response', () => {
-            const mockProducts = [{ id: 1, name: 'Table', price: 200 }];
+            const mockProducts = [{ id: 1, name: 'Table', price: 200, materials: [] }];
             const paginatedPayload = { content: mockProducts, totalPages: 1 };
             const action = { type: getProducts.fulfilled.type, payload: paginatedPayload };
             const state = productsReducer(initialState, action);
@@ -46,7 +46,7 @@ describe('productsSlice', () => {
         });
         
         it('should handle fulfilled state with a malformed JSON string', () => {
-            const malformedString = '[{"id":1,"name":"Chair","price":100,"materials":}]';
+            const malformedString = '[{"id":1,"name":"Chair","price":100,"materials":[]}]';
             const expectedProducts = [{"id":1,"name":"Chair","price":100,"materials":[]}];
             const action = { type: getProducts.fulfilled.type, payload: malformedString };
             const state = productsReducer(initialState, action);
@@ -64,7 +64,7 @@ describe('productsSlice', () => {
 
     describe('createProduct extra reducers', () => {
         it('should handle fulfilled state', () => {
-            const newProduct = { id: 1, name: 'Desk', price: 150 };
+            const newProduct = { id: 1, name: 'Desk', price: 150, materials: [] };
             const action = { type: createProduct.fulfilled.type, payload: newProduct };
             const state = productsReducer(initialState, action);
             expect(state.items).toEqual([newProduct]);
@@ -73,11 +73,11 @@ describe('productsSlice', () => {
 
     describe('updateProduct extra reducers', () => {
         it('should handle fulfilled state', () => {
-            const existingState = {
+            const existingState: ProductsState = {
                 ...initialState,
-                items: [{ id: 1, name: 'Desk', price: 150 }],
+                items: [{ id: 1, name: 'Desk', price: 150, materials: [] }],
             };
-            const updatedProduct = { id: 1, name: 'Oak Desk', price: 160 };
+            const updatedProduct = { id: 1, name: 'Oak Desk', price: 160, materials: [] };
             const action = { type: updateProduct.fulfilled.type, payload: updatedProduct };
             const state = productsReducer(existingState, action);
             expect(state.items).toEqual([updatedProduct]);
@@ -86,9 +86,9 @@ describe('productsSlice', () => {
 
     describe('deleteProduct extra reducers', () => {
         it('should handle fulfilled state', () => {
-            const existingState = {
+            const existingState: ProductsState = {
                 ...initialState,
-                items: [{ id: 1, name: 'Desk', price: 150 }],
+                items: [{ id: 1, name: 'Desk', price: 150, materials: [] }],
             };
             const action = { type: deleteProduct.fulfilled.type, payload: 1 };
             const state = productsReducer(existingState, action);

@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import * as api from '../services/api';
 import type { Product } from '../types';
 
-interface ProductsState {
+export interface ProductsState {
     items: Product[];
     status: 'idle' | 'loading' | 'succeeded' | 'failed';
     error: string | null;

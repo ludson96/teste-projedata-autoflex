@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import * as api from '../services/api';
 import type { RawMaterial } from '../types';
 
-interface RawMaterialsState {
+export interface RawMaterialsState {
     items: RawMaterial[];
     status: 'idle' | 'loading' | 'succeeded' | 'failed';
     error: string | null;
